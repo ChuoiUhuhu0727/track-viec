@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Track Việc</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+  :root {
+    --bg: #EFF3F1;
+    --card: #FFFFFF;
+    --ink: #16211D;
+    --muted: #5B6B63;
+    --muted-soft: #E4EAE6;
+    --border: #D7E0DA;
+    --accent: #146356;
+    --on-accent: #FFFFFF;
+    --accent-soft: #DCEAE6;
+    --must: #A6401C;
+    --must-soft: #F5E2DA;
+    --nice: #8A6D22;
+    --nice-soft: #F1E8CF;
+
+    --font-display: 'Be Vietnam Pro', 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', 'Be Vietnam Pro', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101613;
+      --card: #182420;
+      --ink: #E7EEEA;
+      --muted: #93A39A;
+      --muted-soft: #233029;
+      --border: #26332D;
+      --accent: #4FBBA3;
+      --on-accent: #06231D;
+      --accent-soft: #17332C;
+      --must: #E2703E;
+      --must-soft: #3A2117;
+      --nice: #D8B75B;
+      --nice-soft: #362C13;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101613;
+    --card: #182420;
+    --ink: #E7EEEA;
+    --muted: #93A39A;
+    --muted-soft: #233029;
+    --border: #26332D;
+    --accent: #4FBBA3;
+    --on-accent: #06231D;
+    --accent-soft: #17332C;
+    --must: #E2703E;
+    --must-soft: #3A2117;
+    --nice: #D8B75B;
+    --nice-soft: #362C13;
+    color-scheme: dark;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  img { max-width: 100%; }
+  .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .app {
+    max-width: 760px;
+    margin-inline: auto;
+    padding-inline: 16px;
+    padding-block: 18px 56px;
+  }
+
+  .topbar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    background: var(--bg);
+    padding-block: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 18px;
+    z-index: 10;
+  }
+  .brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+  }
+  .local-note { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+  .overview { display: flex; flex-direction: column; gap: 6px; }
+  .overview-stats {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 13px; color: var(--muted);
+  }
+  .overview-stats .num { color: var(--ink); font-weight: 600; }
+  .dot { opacity: .6; }
+
+  .progress-track {
+    height: 8px; border-radius: 999px; background: var(--muted-soft);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent); border-radius: inherit;
+    transition: width .3s ease; width: 0%;
+  }
+
+  .ai-status { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+
+  .btn {
+    font-family: var(--font-body); font-weight: 600; font-size: 13.5px;
+    border: 1px solid transparent; border-radius: 8px; padding: 8px 14px;
+    cursor: pointer; transition: background .15s ease, opacity .15s ease, border-color .15s ease;
+    background: var(--card); color: var(--ink);
+  }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn-primary, .btn-accent { background: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover, .btn-accent:hover { opacity: .9; }
+  .btn-ghost { background: transparent; border-color: var(--border); color: var(--muted); }
+  .btn-ghost:hover { color: var(--ink); border-color: var(--muted); }
+  .btn-danger { background: var(--must); color: #fff; }
+  .btn-sm { padding: 6px 10px; font-size: 12.5px; }
+  .btn-xs { padding: 4px 8px; font-size: 12px; border-radius: 6px; }
+  .icon-btn {
+    background: transparent; border: none; color: var(--muted); cursor: pointer;
+    padding: 6px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;
+  }
+  .icon-btn:hover { background: var(--muted-soft); color: var(--ink); }
+  .icon-btn.danger:hover { color: var(--must); }
+  .icon-btn.sm { padding: 4px; }
+  .link-btn {
+    background: none; border: none; color: var(--accent); font-size: 12.5px;
+    font-weight: 600; cursor: pointer; padding: 2px 0;
+  }
+  .link-btn:hover { text-decoration: underline; }
+  .confirm-row { display: inline-flex; gap: 6px; align-items: center; }
+
+  .add-row {
+    display: flex; gap: 8px; margin-bottom: 20px;
+  }
+  .add-row input {
+    flex: 1 1 auto; min-width: 0;
+    font-family: var(--font-body); font-size: 14.5px; color: var(--ink);
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .add-row input::placeholder { color: var(--muted); }
+
+  .task-list { display: flex; flex-direction: column; gap: 14px; }
+  .empty-state {
+    text-align: center; color: var(--muted); padding: 40px 16px; font-size: 14px;
+  }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px 16px 16px;
+  }
+  .card-head {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-tags { margin-top: 8px; display: flex; }
+  .expand-btn {
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    display: inline-flex; padding: 4px; border-radius: 6px; flex: 0 0 auto;
+  }
+  .expand-btn:hover { background: var(--muted-soft); }
+  .chev { transition: transform .2s ease; }
+  .chev.chev-open { transform: rotate(180deg); }
+
+  .task-check { width: 18px; height: 18px; accent-color: var(--accent); flex: 0 0 auto; }
+
+  .title-input {
+    flex: 1 1 160px; min-width: 0;
+    font-family: var(--font-display); font-weight: 600; font-size: 15.5px; color: var(--ink);
+    background: transparent; border: 1px solid transparent; border-radius: 6px;
+    padding: 4px 6px;
+  }
+  .title-input:hover { background: var(--muted-soft); }
+  .title-input:focus { background: var(--card); border-color: var(--border); }
+  .sub-title { font-family: var(--font-body); font-weight: 500; font-size: 14px; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto;
+    padding: 5px 11px; border-radius: 999px; border: 1px solid transparent;
+    font-family: var(--font-body); font-size: 12px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; background: var(--muted-soft); color: var(--muted);
+  }
+  .badge-must { background: var(--must-soft); color: var(--must); }
+  .badge-nice { background: var(--nice-soft); color: var(--nice); }
+  .badge-ai { background: transparent; border-style: dashed; border-color: currentColor; }
+
+  .card-meta {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 12.5px; color: var(--muted); margin: 10px 0 4px;
+  }
+  .card-meta .num { color: var(--ink); font-weight: 600; }
+  .card > .progress-track { margin-top: 8px; }
+
+  .subtasks { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
+  .subtask-row {
+    border-top: 1px solid var(--border); padding-top: 12px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .subtask-row.is-done .sub-title { color: var(--muted); text-decoration: line-through; }
+  .subtask-main { display: flex; align-items: center; gap: 8px; }
+  .subtask-main input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--accent); flex: 0 0 auto; }
+
+  .prep-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--muted); margin-left: 25px;
+  }
+  .prep-input {
+    margin-left: 25px;
+    font-family: var(--font-body); font-size: 13.5px; color: var(--ink);
+    background: transparent; border: 1px solid transparent; border-bottom: 1px dashed var(--border);
+    border-radius: 4px; padding: 3px 4px; width: calc(100% - 25px);
+  }
+  .prep-input:hover { background: var(--muted-soft); }
+  .prep-input:focus { background: var(--card); border-color: var(--border); border-bottom-style: solid; }
+  .prep-input::placeholder { color: var(--muted); }
+
+  .time-row {
+    margin-left: 25px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: 12.5px; color: var(--muted);
+  }
+  .time-total { color: var(--ink); }
+  .log-form { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .log-min {
+    width: 64px; font-family: var(--font-mono); font-size: 13px; color: var(--ink);
+    background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px;
+  }
+  .log-note {
+    width: 150px; font-family: var(--font-body); font-size: 12.5px; color: var(--ink);
+    background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px;
+  }
+  .history-list {
+    margin: 2px 0 0 25px; padding: 0; list-style: none;
+    font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 2px;
+  }
+  .history-list .num { color: var(--muted); font-weight: 600; }
+
+  .add-subtask-row {
+    display: flex; gap: 8px; margin-top: 2px;
+  }
+  .add-subtask-row input {
+    flex: 1 1 auto; min-width: 0;
+    font-family: var(--font-body); font-size: 13.5px; color: var(--ink);
+    background: transparent; border: 1px dashed var(--border); border-radius: 6px; padding: 7px 10px;
+  }
+  .add-subtask-row input::placeholder { color: var(--muted); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    background: var(--ink); color: var(--bg);
+    padding: 10px 16px; border-radius: 10px; font-size: 13px;
+    max-width: calc(100% - 32px); text-align: center; z-index: 50;
+    box-shadow: 0 6px 20px rgba(0,0,0,.2);
+  }
+
+  @media (max-width: 480px) {
+    .brand { font-size: 18px; }
+    .log-note { width: 110px; }
+    .prep-label, .prep-input, .time-row, .history-list { margin-left: 0; }
+    .prep-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand-row">
+      <span class="brand">Track Việc</span>
+      <button id="ai-btn" type="button" class="btn btn-accent">Nhờ AI phân loại ưu tiên</button>
+    </div>
+    <p class="local-note">Bản GitHub Pages — dữ liệu lưu ở trình duyệt này (không đồng bộ nhiều máy).</p>
+    <div class="overview">
+      <div class="progress-track"><div id="overview-fill" class="progress-fill"></div></div>
+      <div class="overview-stats">
+        <span id="overview-pct" class="num">0%</span>
+        <span class="dot">·</span>
+        <span id="overview-count">0/0 việc con xong</span>
+        <span class="dot">·</span>
+        <span id="overview-time" class="num">Đã làm 0p</span>
+      </div>
+    </div>
+    <div id="ai-status" class="ai-status" hidden></div>
+  </header>
+
+  <form id="add-task-form" class="add-row">
+    <input id="new-task-title" type="text" placeholder="Thêm việc mới…" autocomplete="off" required />
+    <button type="submit" class="btn btn-primary">Thêm việc</button>
+  </form>
+
+  <main id="task-list" class="task-list"></main>
+  <div id="empty-state" class="empty-state" hidden>Chưa có việc nào — thêm việc đầu tiên ở trên nhé.</div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = 'trackViec.tasks.v1';
+
+  // ---------- state ----------
+  var sampleApi = null;
+  var tasks = [];
+  var aiLoading = false;
+  var collapsedTasks = new Set();
+  var openHistories = new Set();
+  var pendingDeletes = new Set();
+  var debounceTimers = new Map();
+  var toastTimer = null;
+
+  var AI_PROMPT_PREFIX = 'Bạn là trợ lý giúp một sinh viên phân loại độ ưu tiên công việc. Với MỖI việc trong danh sách JSON dưới đây (kèm tên các việc con của nó), hãy xếp loại là "must" (bắt buộc phải làm, ảnh hưởng lớn nếu bỏ qua) hoặc "nice" (có thì tốt, không có cũng không sao), và giải thích bằng đúng 1 câu ngắn tiếng Việt. Danh sách:\n\n';
+  var AI_PROMPT_SUFFIX = '\n\nTrả lời CHỈ bằng một JSON array, mỗi phần tử có dạng {"id": "<giữ nguyên id>", "priority": "must" hoặc "nice", "reason": "<1 câu ngắn tiếng Việt>"}. Không viết thêm chữ nào khác ngoài JSON.';
+
+  // ---------- helpers ----------
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  function today() { return new Date().toISOString().slice(0, 10); }
+  function fmtDate(iso) {
+    var parts = String(iso).split('-');
+    return parts.length === 3 ? parts[2] + '/' + parts[1] : iso;
+  }
+  function formatMinutes(total) {
+    total = Math.max(0, Math.round(total || 0));
+    if (total === 0) return '0p';
+    var h = Math.floor(total / 60), m = total % 60;
+    if (h > 0 && m > 0) return h + 'g' + m + 'p';
+    if (h > 0) return h + 'g';
+    return m + 'p';
+  }
+  function priorityLabel(p) {
+    if (p === 'must') return 'Phải làm';
+    if (p === 'nice') return 'Có thì tốt';
+    return 'Chưa phân loại';
+  }
+  function trashIcon() {
+    return '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M6.5 4.5V3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4.5 4.5l.6 8.4a1 1 0 0 0 1 .93h3.8a1 1 0 0 0 1-.93l.6-8.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function showToast(msg) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.hidden = true; }, 3500);
+  }
+  async function getCapability(name) {
+    try {
+      if (!window.claude || typeof window.claude.use !== 'function') return null;
+      return await window.claude.use(name);
+    } catch (e) { return null; }
+  }
+  function findTask(id) { return tasks.find(function (t) { return t.id === id; }); }
+  function debouncedWrite(key, ms, fn) {
+    clearTimeout(debounceTimers.get(key));
+    var t = setTimeout(function () { debounceTimers.delete(key); fn(); }, ms);
+    debounceTimers.set(key, t);
+  }
+  function withSubtasks(task, mutator) {
+    var copy = (task.subtasks || []).map(function (s) { return Object.assign({}, s); });
+    mutator(copy);
+    return copy;
+  }
+
+  // ---------- storage (localStorage — this is a static, backend-less page) ----------
+  function loadTasks() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { /* private mode / blocked storage: fall through */ }
+    return null;
+  }
+  function saveTasks() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }
+    catch (e) { showToast('Không lưu được vào bộ nhớ trình duyệt.'); }
+  }
+
+  // ---------- example seed ----------
+  function exampleTasks() {
+    var now = new Date().toISOString();
+    return [
+      {
+        id: uid(),
+        title: 'Ví dụ: Chuẩn bị bài thuyết trình nhóm',
+        priority: null, aiSuggested: false, aiReason: null,
+        order: 1, createdAt: now, done: false,
+        subtasks: [
+          { id: uid(), title: 'Viết outline nội dung', prepInput: 'Cần: đề bài + tài liệu tham khảo từ giảng viên', done: true, minutesSpent: 45, logs: [{ minutes: 45, note: '', date: today() }], order: 1 },
+          { id: uid(), title: 'Thiết kế slide', prepInput: 'Cần: outline đã duyệt + template slide của nhóm', done: false, minutesSpent: 0, logs: [], order: 2 }
+        ]
+      },
+      {
+        id: uid(),
+        title: 'Ví dụ: Dọn dẹp góc học tập',
+        priority: 'nice', aiSuggested: false, aiReason: null,
+        order: 2, createdAt: now, done: false,
+        subtasks: [
+          { id: uid(), title: 'Sắp xếp lại sách vở', prepInput: '', done: false, minutesSpent: 0, logs: [], order: 1 }
+        ]
+      }
+    ];
+  }
+
+  // ---------- data ops (synchronous — plain localStorage, no server round trip) ----------
+  function createTask(title) {
+    var order = tasks.reduce(function (m, t) { return Math.max(m, t.order || 0); }, 0) + 1;
+    tasks.push({ id: uid(), title: title, priority: null, aiSuggested: false, aiReason: null, order: order, createdAt: new Date().toISOString(), done: false, subtasks: [] });
+    saveTasks();
+    render();
+  }
+  function patchTask(taskId, patch) {
+    var t = findTask(taskId);
+    if (t) Object.assign(t, patch);
+    saveTasks();
+    render();
+  }
+  function removeTask(taskId) {
+    tasks = tasks.filter(function (t) { return t.id !== taskId; });
+    saveTasks();
+    render();
+  }
+  function toggleSubtaskDone(taskId, subId) {
+    var t = findTask(taskId); if (!t) return;
+    var newSubs = withSubtasks(t, function (subs) {
+      var s = subs.find(function (x) { return x.id === subId; });
+      if (s) s.done = !s.done;
+    });
+    patchTask(taskId, { subtasks: newSubs });
+  }
+  function addSubtask(taskId, title) {
+    var t = findTask(taskId); if (!t) return;
+    var newSub = { id: uid(), title: title, prepInput: '', done: false, minutesSpent: 0, logs: [], order: (t.subtasks || []).length + 1 };
+    patchTask(taskId, { subtasks: (t.subtasks || []).concat([newSub]) });
+  }
+  function removeSubtask(taskId, subId) {
+    var t = findTask(taskId); if (!t) return;
+    patchTask(taskId, { subtasks: (t.subtasks || []).filter(function (s) { return s.id !== subId; }) });
+  }
+  function editSubtaskField(taskId, subId, field, value) {
+    debouncedWrite(taskId + ':' + subId + ':' + field, 400, function () {
+      var t = findTask(taskId); if (!t) return;
+      var newSubs = withSubtasks(t, function (subs) {
+        var s = subs.find(function (x) { return x.id === subId; });
+        if (s) s[field] = value;
+      });
+      patchTask(taskId, { subtasks: newSubs });
+    });
+  }
+  function editTaskField(taskId, field, value) {
+    debouncedWrite(taskId + ':' + field, 400, function () {
+      var patch = {}; patch[field] = value;
+      patchTask(taskId, patch);
+    });
+  }
+  function logTime(taskId, subId, minutes, note) {
+    if (!minutes || minutes <= 0) return;
+    var t = findTask(taskId); if (!t) return;
+    var newSubs = withSubtasks(t, function (subs) {
+      var s = subs.find(function (x) { return x.id === subId; });
+      if (!s) return;
+      s.minutesSpent = (s.minutesSpent || 0) + minutes;
+      s.logs = (s.logs || []).concat([{ minutes: minutes, note: note || '', date: today() }]);
+    });
+    patchTask(taskId, { subtasks: newSubs });
+  }
+  function cyclePriorityClick(taskId) {
+    var t = findTask(taskId); if (!t) return;
+    if (t.aiSuggested) { patchTask(taskId, { aiSuggested: false }); return; }
+    var order = [null, 'must', 'nice'];
+    var idx = order.indexOf(t.priority);
+    var next = order[(idx + 1) % order.length];
+    patchTask(taskId, { priority: next, aiSuggested: false });
+  }
+  function requestDelete(key) {
+    if (pendingDeletes.has(key)) return;
+    pendingDeletes.add(key);
+    render();
+    setTimeout(function () { if (pendingDeletes.delete(key)) render(); }, 4000);
+  }
+  function cancelDelete(key) { if (pendingDeletes.delete(key)) render(); }
+
+  // ---------- AI suggestions (only works if this page is ever opened inside a Claude Artifact frame) ----------
+  function aiErrorCopy(code) {
+    switch (code) {
+      case 'not_granted': return 'Cậu chưa cho phép dùng Claude ở đây.';
+      case 'rate_limited': return 'Đang bị giới hạn tốc độ, thử lại sau chút nhé.';
+      case 'refused': return 'Claude từ chối yêu cầu này.';
+      case 'invalid_json':
+      case 'empty_completion': return 'AI trả lời không đúng định dạng, thử lại xem sao.';
+      case 'session_expired': return 'Cậu cần đăng nhập lại.';
+      default: return 'Có lỗi xảy ra, thử lại sau nhé.';
+    }
+  }
+  function setAiButtonLoading(loading) {
+    var btn = document.getElementById('ai-btn');
+    btn.disabled = loading;
+    btn.textContent = loading ? 'Đang hỏi AI…' : 'Nhờ AI phân loại ưu tiên';
+  }
+  async function runAiSuggestions() {
+    if (aiLoading) return;
+    if (!sampleApi) {
+      showToast('Tính năng AI chỉ chạy trong bản Claude Artifact — bản GitHub Pages này chưa hỗ trợ gọi AI trực tiếp.');
+      return;
+    }
+    var candidates = tasks.filter(function (t) { return t.priority == null || t.aiSuggested; });
+    if (candidates.length === 0) { showToast('Mọi việc đã được phân loại thủ công rồi.'); return; }
+    aiLoading = true;
+    setAiButtonLoading(true);
+    try {
+      var payload = candidates.map(function (t) {
+        return { id: t.id, title: t.title, subtasks: (t.subtasks || []).map(function (s) { return s.title; }) };
+      });
+      var prompt = AI_PROMPT_PREFIX + JSON.stringify(payload) + AI_PROMPT_SUFFIX;
+      var result = await sampleApi.json(prompt, { modelTier: 'quick', cache: false });
+      if (!Array.isArray(result)) throw { code: 'invalid_json' };
+      for (var i = 0; i < result.length; i++) {
+        var item = result[i];
+        var t = findTask(String(item && item.id));
+        if (!t) continue;
+        var priority = item.priority === 'must' ? 'must' : (item.priority === 'nice' ? 'nice' : null);
+        if (!priority) continue;
+        patchTask(t.id, { priority: priority, aiSuggested: true, aiReason: String(item.reason || '').slice(0, 200) });
+      }
+      showToast('AI đã gợi ý xong — xem badge từng việc nhé.');
+    } catch (err) {
+      showToast(aiErrorCopy(err && err.code));
+    } finally {
+      aiLoading = false;
+      setAiButtonLoading(false);
+    }
+  }
+
+  // ---------- overview ----------
+  function computeOverview() {
+    var totalUnits = 0, doneUnits = 0, totalMinutes = 0;
+    tasks.forEach(function (t) {
+      var subs = t.subtasks || [];
+      if (subs.length === 0) {
+        totalUnits += 1;
+        if (t.done) doneUnits += 1;
+      } else {
+        subs.forEach(function (s) {
+          totalUnits += 1;
+          if (s.done) doneUnits += 1;
+          totalMinutes += (s.minutesSpent || 0);
+        });
+      }
+    });
+    var pct = totalUnits === 0 ? 0 : Math.round((doneUnits / totalUnits) * 100);
+    return { pct: pct, doneUnits: doneUnits, totalUnits: totalUnits, totalMinutes: totalMinutes };
+  }
+
+  // ---------- render ----------
+  function renderSubtaskRow(taskId, s) {
+    var delKey = 'sub:' + taskId + ':' + s.id;
+    var pendingDel = pendingDeletes.has(delKey);
+    var historyKey = taskId + ':' + s.id;
+    var historyOpen = openHistories.has(historyKey);
+    var logs = (s.logs || []).slice().reverse();
+    var deleteHtml = !pendingDel
+      ? '<button type="button" class="icon-btn danger sm" data-action="delete-subtask" data-task="' + taskId + '" data-sub="' + s.id + '" aria-label="Xoá việc con">' + trashIcon() + '</button>'
+      : '<span class="confirm-row"><button type="button" class="btn btn-danger btn-xs" data-action="delete-subtask" data-task="' + taskId + '" data-sub="' + s.id + '">Xoá</button><button type="button" class="btn btn-ghost btn-xs" data-action="cancel-delete-subtask" data-task="' + taskId + '" data-sub="' + s.id + '">Huỷ</button></span>';
+    var historyHtml = (historyOpen && logs.length)
+      ? '<ul class="history-list">' + logs.map(function (l) {
+          return '<li><span class="num">' + esc(fmtDate(l.date)) + '</span> — ' + esc(formatMinutes(l.minutes)) + (l.note ? ' · ' + esc(l.note) : '') + '</li>';
+        }).join('') + '</ul>'
+      : '';
+    return '' +
+      '<div class="subtask-row' + (s.done ? ' is-done' : '') + '">' +
+        '<div class="subtask-main">' +
+          '<input type="checkbox" data-action="toggle-subtask" data-task="' + taskId + '" data-sub="' + s.id + '" ' + (s.done ? 'checked' : '') + ' aria-label="Đánh dấu xong việc con">' +
+          '<input id="sub-title-' + taskId + '-' + s.id + '" class="title-input sub-title" data-field="title" data-task="' + taskId + '" data-sub="' + s.id + '" value="' + esc(s.title) + '" placeholder="Tên việc con" />' +
+          deleteHtml +
+        '</div>' +
+        '<label class="prep-label" for="sub-prep-' + taskId + '-' + s.id + '">Input cần chuẩn bị</label>' +
+        '<input id="sub-prep-' + taskId + '-' + s.id + '" class="prep-input" data-field="prepInput" data-task="' + taskId + '" data-sub="' + s.id + '" value="' + esc(s.prepInput) + '" placeholder="vd: số liệu từ thầy X, tài liệu tham khảo…" />' +
+        '<div class="time-row">' +
+          '<span class="num time-total">Đã làm: ' + esc(formatMinutes(s.minutesSpent || 0)) + '</span>' +
+          '<form class="log-form" data-action="log-time" data-task="' + taskId + '" data-sub="' + s.id + '">' +
+            '<input id="sub-logmin-' + taskId + '-' + s.id + '" type="number" min="1" step="1" name="minutes" placeholder="phút" class="log-min" required />' +
+            '<input id="sub-lognote-' + taskId + '-' + s.id + '" type="text" name="note" placeholder="ghi chú (tuỳ chọn)" class="log-note" />' +
+            '<button type="submit" class="btn btn-ghost btn-xs">Ghi giờ</button>' +
+          '</form>' +
+          (logs.length ? '<button type="button" class="link-btn" data-action="toggle-history" data-task="' + taskId + '" data-sub="' + s.id + '">' + (historyOpen ? 'Ẩn lịch sử' : 'Xem lịch sử') + ' (' + logs.length + ')</button>' : '') +
+        '</div>' +
+        historyHtml +
+      '</div>';
+  }
+
+  function renderTaskCard(task) {
+    var subs = (task.subtasks || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+    var hasSubs = subs.length > 0;
+    var doneCount = hasSubs ? subs.filter(function (s) { return s.done; }).length : (task.done ? 1 : 0);
+    var totalCount = hasSubs ? subs.length : 1;
+    var pct = totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100);
+    var totalMin = subs.reduce(function (m, s) { return m + (s.minutesSpent || 0); }, 0);
+    var collapsed = collapsedTasks.has(task.id);
+    var delKey = 'task:' + task.id;
+    var pendingDel = pendingDeletes.has(delKey);
+
+    var checkHtml = !hasSubs
+      ? '<input type="checkbox" class="task-check" data-action="toggle-task-done" data-task="' + task.id + '" ' + (task.done ? 'checked' : '') + ' aria-label="Đánh dấu xong">'
+      : '';
+    var deleteHtml = !pendingDel
+      ? '<button type="button" class="icon-btn danger" data-action="delete-task" data-task="' + task.id + '" aria-label="Xoá việc">' + trashIcon() + '</button>'
+      : '<span class="confirm-row"><button type="button" class="btn btn-danger btn-sm" data-action="delete-task" data-task="' + task.id + '">Xoá luôn</button><button type="button" class="btn btn-ghost btn-sm" data-action="cancel-delete-task" data-task="' + task.id + '">Huỷ</button></span>';
+
+    var badgeClass = 'badge badge-' + (task.priority || 'none') + (task.aiSuggested ? ' badge-ai' : '');
+    var badgeLabel = esc(priorityLabel(task.priority)) + (task.aiSuggested ? ' · AI gợi ý' : '');
+    var badgeTitle = task.aiReason ? esc(task.aiReason) : 'Bấm để đổi mức ưu tiên';
+
+    var bodyHtml = '';
+    if (!collapsed) {
+      bodyHtml = '<div class="subtasks">' +
+        subs.map(function (s) { return renderSubtaskRow(task.id, s); }).join('') +
+        '<form class="add-subtask-row" data-action="add-subtask" data-task="' + task.id + '">' +
+          '<input type="text" name="subtitle" placeholder="Thêm việc con…" autocomplete="off" required />' +
+          '<button type="submit" class="btn btn-ghost btn-sm">+ Việc con</button>' +
+        '</form>' +
+      '</div>';
+    }
+
+    return '' +
+      '<section class="card">' +
+        '<div class="card-head">' +
+          '<button type="button" class="expand-btn" data-action="expand-task" data-task="' + task.id + '" aria-label="' + (collapsed ? 'Mở rộng' : 'Thu gọn') + '">' +
+            '<svg class="chev' + (collapsed ? '' : ' chev-open') + '" width="16" height="16" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '</button>' +
+          checkHtml +
+          '<input id="t-title-' + task.id + '" class="title-input" data-field="title" data-task="' + task.id + '" value="' + esc(task.title) + '" placeholder="Tên việc" />' +
+          deleteHtml +
+        '</div>' +
+        '<div class="card-tags">' +
+          '<button type="button" class="' + badgeClass + '" data-action="cycle-priority" data-task="' + task.id + '" title="' + badgeTitle + '">' + badgeLabel + '</button>' +
+        '</div>' +
+        '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="card-meta">' +
+          '<span class="num">' + pct + '%</span><span class="dot">·</span><span>' + doneCount + '/' + totalCount + ' xong</span>' +
+          (hasSubs ? '<span class="dot">·</span><span class="num">Đã làm ' + esc(formatMinutes(totalMin)) + '</span>' : '') +
+        '</div>' +
+        bodyHtml +
+      '</section>';
+  }
+
+  function render() {
+    var activeEl = document.activeElement;
+    var activeId = activeEl && activeEl.id ? activeEl.id : null;
+    var activeSel = (activeEl && 'selectionStart' in activeEl) ? [activeEl.selectionStart, activeEl.selectionEnd] : null;
+
+    var listEl = document.getElementById('task-list');
+    var emptyEl = document.getElementById('empty-state');
+    var sorted = tasks.slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+
+    if (sorted.length === 0) {
+      listEl.innerHTML = '';
+      emptyEl.hidden = false;
+    } else {
+      emptyEl.hidden = true;
+      listEl.innerHTML = sorted.map(renderTaskCard).join('');
+    }
+
+    if (activeId) {
+      var el = document.getElementById(activeId);
+      if (el) {
+        el.focus({ preventScroll: true });
+        if (activeSel && 'setSelectionRange' in el) {
+          try { el.setSelectionRange(activeSel[0], activeSel[1]); } catch (e) {}
+        }
+      }
+    }
+
+    var ov = computeOverview();
+    document.getElementById('overview-fill').style.width = ov.pct + '%';
+    document.getElementById('overview-pct').textContent = ov.pct + '%';
+    document.getElementById('overview-count').textContent = ov.doneUnits + '/' + ov.totalUnits + ' việc con xong';
+    document.getElementById('overview-time').textContent = 'Đã làm ' + formatMinutes(ov.totalMinutes);
+  }
+
+  // ---------- events ----------
+  function onListClick(e) {
+    var btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    var action = btn.dataset.action;
+    var taskId = btn.dataset.task;
+    var subId = btn.dataset.sub;
+    if (action === 'expand-task') {
+      collapsedTasks.has(taskId) ? collapsedTasks.delete(taskId) : collapsedTasks.add(taskId);
+      render();
+    } else if (action === 'cycle-priority') {
+      cyclePriorityClick(taskId);
+    } else if (action === 'delete-task') {
+      var key = 'task:' + taskId;
+      if (pendingDeletes.has(key)) { pendingDeletes.delete(key); removeTask(taskId); }
+      else requestDelete(key);
+    } else if (action === 'cancel-delete-task') {
+      cancelDelete('task:' + taskId);
+    } else if (action === 'delete-subtask') {
+      var key2 = 'sub:' + taskId + ':' + subId;
+      if (pendingDeletes.has(key2)) { pendingDeletes.delete(key2); removeSubtask(taskId, subId); }
+      else requestDelete(key2);
+    } else if (action === 'cancel-delete-subtask') {
+      cancelDelete('sub:' + taskId + ':' + subId);
+    } else if (action === 'toggle-history') {
+      var hk = taskId + ':' + subId;
+      openHistories.has(hk) ? openHistories.delete(hk) : openHistories.add(hk);
+      render();
+    }
+  }
+  function onListChange(e) {
+    var el = e.target;
+    if (el.matches && el.matches('[data-action="toggle-subtask"]')) {
+      toggleSubtaskDone(el.dataset.task, el.dataset.sub);
+    } else if (el.matches && el.matches('[data-action="toggle-task-done"]')) {
+      patchTask(el.dataset.task, { done: el.checked });
+    }
+  }
+  function onListInput(e) {
+    var el = e.target;
+    var field = el.dataset.field;
+    if (!field) return;
+    var taskId = el.dataset.task;
+    var subId = el.dataset.sub;
+    if (subId) editSubtaskField(taskId, subId, field, el.value);
+    else editTaskField(taskId, field, el.value);
+  }
+  function onListSubmit(e) {
+    var form = e.target;
+    var action = form.dataset.action;
+    if (action === 'add-subtask') {
+      e.preventDefault();
+      var input = form.elements['subtitle'];
+      var title = input.value.trim();
+      if (title) addSubtask(form.dataset.task, title);
+      form.reset();
+    } else if (action === 'log-time') {
+      e.preventDefault();
+      var minutes = parseInt(form.elements['minutes'].value, 10);
+      var note = form.elements['note'].value.trim();
+      if (minutes > 0) logTime(form.dataset.task, form.dataset.sub, minutes, note);
+      form.reset();
+    }
+  }
+
+  // ---------- init ----------
+  async function initApp() {
+    document.getElementById('task-list').addEventListener('click', onListClick);
+    document.getElementById('task-list').addEventListener('change', onListChange);
+    document.getElementById('task-list').addEventListener('input', onListInput);
+    document.getElementById('task-list').addEventListener('submit', onListSubmit);
+    document.getElementById('add-task-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var input = document.getElementById('new-task-title');
+      var title = input.value.trim();
+      if (!title) return;
+      createTask(title);
+      input.value = '';
+    });
+    document.getElementById('ai-btn').addEventListener('click', runAiSuggestions);
+
+    sampleApi = await getCapability('sample'); // stays null outside a Claude Artifact frame
+
+    var loaded = loadTasks();
+    if (loaded && loaded.length) {
+      tasks = loaded;
+    } else {
+      tasks = exampleTasks();
+      saveTasks();
+    }
+    render();
+  }
+
+  initApp();
+})();
+</script>
+</body>
+</html>
