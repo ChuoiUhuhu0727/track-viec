@@ -151,6 +151,8 @@
   .icon-btn:hover { background: var(--muted-soft); color: var(--ink); }
   .icon-btn.danger:hover { color: var(--must); }
   .icon-btn.sm { padding: 4px; }
+  .icon-btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
+  .move-btns { display: inline-flex; flex: 0 0 auto; }
   .link-btn {
     background: none; border: none; color: var(--accent); font-size: 12.5px;
     font-weight: 600; cursor: pointer; padding: 2px 0;
@@ -503,6 +505,17 @@
     var next = order[(idx + 1) % order.length];
     patchTask(taskId, { priority: next, aiSuggested: false });
   }
+  function moveTask(taskId, dir) {
+    var sorted = tasks.slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+    var idx = sorted.findIndex(function (t) { return t.id === taskId; });
+    var target = idx + dir;
+    if (idx < 0 || target < 0 || target >= sorted.length) return;
+    var moved = sorted.splice(idx, 1)[0];
+    sorted.splice(target, 0, moved);
+    sorted.forEach(function (t, i) { t.order = i + 1; });
+    saveTasks();
+    render();
+  }
   function requestDelete(key) {
     if (pendingDeletes.has(key)) return;
     pendingDeletes.add(key);
@@ -619,7 +632,11 @@
       '</div>';
   }
 
-  function renderTaskCard(task) {
+  function arrowIcon(up) {
+    return '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="' + (up ? 'M4 10l4-4 4 4' : 'M4 6l4 4 4-4') + '" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  function renderTaskCard(task, index, list) {
     var subs = (task.subtasks || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
     var hasSubs = subs.length > 0;
     var doneCount = hasSubs ? subs.filter(function (s) { return s.done; }).length : (task.done ? 1 : 0);
@@ -660,6 +677,10 @@
           '</button>' +
           checkHtml +
           '<input id="t-title-' + task.id + '" class="title-input" data-field="title" data-task="' + task.id + '" value="' + esc(task.title) + '" placeholder="Tên việc" />' +
+          '<span class="move-btns">' +
+            '<button type="button" class="icon-btn sm" data-action="move-up" data-task="' + task.id + '" aria-label="Chuyển lên"' + (index === 0 ? ' disabled' : '') + '>' + arrowIcon(true) + '</button>' +
+            '<button type="button" class="icon-btn sm" data-action="move-down" data-task="' + task.id + '" aria-label="Chuyển xuống"' + (index === list.length - 1 ? ' disabled' : '') + '>' + arrowIcon(false) + '</button>' +
+          '</span>' +
           deleteHtml +
         '</div>' +
         '<div class="card-tags">' +
@@ -718,6 +739,10 @@
     if (action === 'expand-task') {
       collapsedTasks.has(taskId) ? collapsedTasks.delete(taskId) : collapsedTasks.add(taskId);
       render();
+    } else if (action === 'move-up') {
+      moveTask(taskId, -1);
+    } else if (action === 'move-down') {
+      moveTask(taskId, 1);
     } else if (action === 'cycle-priority') {
       cyclePriorityClick(taskId);
     } else if (action === 'delete-task') {
