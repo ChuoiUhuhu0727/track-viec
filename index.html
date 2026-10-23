@@ -360,6 +360,31 @@
     .prep-label, .prep-input, .time-row, .history-list { margin-left: 0; }
     .prep-input { width: 100%; }
   }
+
+  /* ---- duck-shaped boxes: a round "body" with a head peeking over the top and feet below ---- */
+  :root {
+    --head-1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='40' viewBox='0 0 64 40'%3E%3Cpath d='M6 40A26 26 0 0 1 58 40z' fill='%23FFD23F'/%3E%3Cpath d='M26 15q2-7 7-3q-1 4-7 3z' fill='%23FFD23F'/%3E%3Cpath d='M52 27q10-3 11 3q-1 5-11 4z' fill='%23FF9F1C'/%3E%3Ccircle cx='56' cy='34' r='1.6' fill='%23FF6FA5'/%3E%3Ccircle cx='34' cy='35' r='3' fill='%23FF8FB0' opacity='.8'/%3E%3Ccircle cx='40' cy='25' r='5' fill='%23FFFFFF' stroke='%234A2236' stroke-width='1'/%3E%3Ccircle cx='41.500' cy='26.500' r='2.200' fill='%234A2236'/%3E%3C/svg%3E");
+    --head-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='40' viewBox='0 0 64 40'%3E%3Cpath d='M6 40A26 26 0 0 1 58 40z' fill='%23FFD23F'/%3E%3Cpath d='M26 15q2-7 7-3q-1 4-7 3z' fill='%23FFD23F'/%3E%3Cpath d='M52 27q10-3 11 3q-1 5-11 4z' fill='%23FF9F1C'/%3E%3Ccircle cx='56' cy='34' r='1.6' fill='%23FF6FA5'/%3E%3Ccircle cx='34' cy='35' r='3' fill='%23FF8FB0' opacity='.8'/%3E%3Crect x='28' y='21' width='11' height='8' rx='3.500' fill='%234A2236'/%3E%3Crect x='41' y='21' width='11' height='8' rx='3.500' fill='%234A2236'/%3E%3Cpath d='M39 24.500h2' stroke='%234A2236' stroke-width='1.600'/%3E%3Cpath d='M31 23.500h3' stroke='%23FFFFFF' stroke-width='1.200' stroke-linecap='round'/%3E%3C/svg%3E");
+    --head-3: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='40' viewBox='0 0 64 40'%3E%3Cpath d='M6 40A26 26 0 0 1 58 40z' fill='%23FFD23F'/%3E%3Cpath d='M26 15q2-7 7-3q-1 4-7 3z' fill='%23FFD23F'/%3E%3Cpath d='M52 27q10-3 11 3q-1 5-11 4z' fill='%23FF9F1C'/%3E%3Ccircle cx='56' cy='34' r='1.6' fill='%23FF6FA5'/%3E%3Ccircle cx='34' cy='35' r='3' fill='%23FF8FB0' opacity='.8'/%3E%3Cpath d='M29 17L40 4l11 13z' fill='%23A78BFA'/%3E%3Cpath d='M33 12l11 2M36 8l7 1.500' stroke='%23FFFFFF' stroke-width='1.300'/%3E%3Ccircle cx='40' cy='4' r='3.200' fill='%23FF6FA5'/%3E%3Ccircle cx='40' cy='26' r='2' fill='%234A2236'/%3E%3C/svg%3E");
+    --feet: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='10' viewBox='0 0 64 10'%3E%3Cpath d='M2 0H22Q20 9 12 9Q4 9 2 0z' fill='%23FF9F1C'/%3E%3Cpath d='M36 0H56Q54 9 46 9Q38 9 36 0z' fill='%23FF9F1C'/%3E%3Cpath d='M8 2v4M12 2v5M16 2v4M42 2v4M46 2v5M50 2v4' stroke='%23E8890C' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+  .app { padding-block: 4px 56px; }
+  .topbar, .card { position: relative; border-radius: 22px; margin-top: 44px; }
+  .topbar { margin-bottom: 18px; --head: var(--head-2); }
+  details.card { margin-top: 44px; }
+  .task-list { gap: 0; }
+  .journal { margin-bottom: 0; }
+  .topbar::before, .card::before {
+    content: ''; position: absolute; right: 40px; bottom: 100%; width: 64px; height: 40px;
+    background: var(--head, var(--head-1)) no-repeat center bottom / 64px 40px; pointer-events: none;
+  }
+  .topbar::after, .card::after {
+    content: ''; position: absolute; left: 44px; bottom: -9px; width: 64px; height: 10px;
+    background: var(--feet) no-repeat; pointer-events: none;
+  }
+  .task-list .card:nth-child(3n+2) { --head: var(--head-2); }
+  .task-list .card:nth-child(3n) { --head: var(--head-3); }
+  details#diary { --head: var(--head-3); }
 </style>
 </head>
 <body>
