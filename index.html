@@ -274,6 +274,37 @@
   }
   .add-subtask-row input::placeholder { color: var(--muted); }
 
+  .bar-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 3px; }
+  .overview + .overview { margin-top: 10px; }
+  .progress-fill.is-behind { background: var(--must); }
+  .daily-detail { font-size: 12px; color: var(--muted); }
+  .daily-verdict { font-weight: 600; }
+  .daily-verdict.up { color: var(--accent); }
+  .daily-verdict.down { color: var(--must); }
+
+  .journal { margin-bottom: 20px; }
+  .journal h2 { font-family: var(--font-display); font-size: 15.5px; margin: 0 0 4px; }
+  .journal-hint { font-size: 12.5px; color: var(--muted); margin: 0 0 10px; }
+  .journal .add-row { margin-bottom: 10px; flex-wrap: wrap; }
+  .journal select {
+    font-family: var(--font-body); font-size: 13.5px; color: var(--ink);
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px;
+  }
+  .journal-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .journal-list li { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .journal-list .jtext { flex: 1 1 auto; min-width: 0; }
+  .jw { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+
+  .card-dates {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 12.5px; color: var(--muted); margin-top: 8px;
+  }
+  .due-input {
+    font-family: var(--font-mono); font-size: 12.5px; color: var(--ink);
+    background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px;
+  }
+  .due-late { color: var(--must); font-weight: 600; }
+
   .toast {
     position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px));
     transform: translateX(-50%);
@@ -301,6 +332,7 @@
     </div>
     <p class="local-note">Bản GitHub Pages — dữ liệu lưu ở trình duyệt này (không đồng bộ nhiều máy).</p>
     <div class="overview">
+      <div class="bar-label">Hoàn thành</div>
       <div class="progress-track"><div id="overview-fill" class="progress-fill"></div></div>
       <div class="overview-stats">
         <span id="overview-pct" class="num">0%</span>
@@ -310,6 +342,12 @@
         <span id="overview-time" class="num">Đã làm 0p</span>
       </div>
     </div>
+    <div class="overview">
+      <div class="bar-label">Tiến bộ hôm nay so với hôm qua (mục tiêu +1%)</div>
+      <div class="progress-track"><div id="daily-fill" class="progress-fill"></div></div>
+      <div class="overview-stats"><span id="daily-verdict" class="daily-verdict"></span></div>
+      <div id="daily-detail" class="daily-detail"></div>
+    </div>
     <div id="ai-status" class="ai-status" hidden></div>
   </header>
 
@@ -317,6 +355,21 @@
     <input id="new-task-title" type="text" placeholder="Thêm việc mới…" autocomplete="off" required />
     <button type="submit" class="btn btn-primary">Thêm việc</button>
   </form>
+
+  <section class="card journal">
+    <h2>Hôm nay mình học được gì?</h2>
+    <p class="journal-hint">Ghi lại điều đã thật sự học / hiểu / tự tư duy được — không chỉ việc đã làm. Mỗi ý tính điểm theo độ lớn.</p>
+    <form id="journal-form" class="add-row">
+      <input id="journal-text" type="text" placeholder="vd: hiểu vì sao SLAM cần loop closure…" autocomplete="off" required />
+      <select id="journal-weight" aria-label="Độ lớn">
+        <option value="1">Nhớ được (1đ)</option>
+        <option value="2">Hiểu được (2đ)</option>
+        <option value="3">Tự tư duy / áp dụng (3đ)</option>
+      </select>
+      <button type="submit" class="btn btn-primary">Ghi</button>
+    </form>
+    <ul id="journal-list" class="journal-list"></ul>
+  </section>
 
   <main id="task-list" class="task-list"></main>
   <div id="empty-state" class="empty-state" hidden>Chưa có việc nào — thêm việc đầu tiên ở trên nhé.</div>
@@ -329,10 +382,13 @@
   "use strict";
 
   var STORAGE_KEY = 'trackViec.tasks.v1';
+  var JOURNAL_KEY = 'trackViec.journal.v1';
+  var POINTS_PER_30MIN = 1;
 
   // ---------- state ----------
   var sampleApi = null;
   var tasks = [];
+  var journal = [];
   var aiLoading = false;
   var collapsedTasks = new Set();
   var openHistories = new Set();
@@ -350,7 +406,12 @@
     });
   }
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
-  function today() { return new Date().toISOString().slice(0, 10); }
+  function dateKey(d) {
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+  function today() { return dateKey(new Date()); }
+  function yesterday() { var d = new Date(); return dateKey(new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1)); }
   function fmtDate(iso) {
     var parts = String(iso).split('-');
     return parts.length === 3 ? parts[2] + '/' + parts[1] : iso;
@@ -404,6 +465,17 @@
     } catch (e) { /* private mode / blocked storage: fall through */ }
     return null;
   }
+  function loadJournal() {
+    try {
+      var raw = localStorage.getItem(JOURNAL_KEY);
+      if (raw) { var j = JSON.parse(raw); if (Array.isArray(j)) return j; }
+    } catch (e) {}
+    return [];
+  }
+  function saveJournal() {
+    try { localStorage.setItem(JOURNAL_KEY, JSON.stringify(journal)); }
+    catch (e) { showToast('Không lưu được vào bộ nhớ trình duyệt.'); }
+  }
   function saveTasks() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }
     catch (e) { showToast('Không lưu được vào bộ nhớ trình duyệt.'); }
@@ -437,8 +509,8 @@
 
   // ---------- data ops (synchronous — plain localStorage, no server round trip) ----------
   function createTask(title) {
-    var order = tasks.reduce(function (m, t) { return Math.max(m, t.order || 0); }, 0) + 1;
-    tasks.push({ id: uid(), title: title, priority: null, aiSuggested: false, aiReason: null, order: order, createdAt: new Date().toISOString(), done: false, subtasks: [] });
+    var order = tasks.reduce(function (m, t) { return Math.min(m, t.order || 0); }, 1) - 1; // smallest order = top of the list
+    tasks.push({ id: uid(), title: title, priority: null, aiSuggested: false, aiReason: null, order: order, createdAt: new Date().toISOString(), dueDate: null, done: false, doneAt: null, subtasks: [] });
     saveTasks();
     render();
   }
@@ -457,7 +529,7 @@
     var t = findTask(taskId); if (!t) return;
     var newSubs = withSubtasks(t, function (subs) {
       var s = subs.find(function (x) { return x.id === subId; });
-      if (s) s.done = !s.done;
+      if (s) { s.done = !s.done; s.doneAt = s.done ? today() : null; }
     });
     patchTask(taskId, { subtasks: newSubs });
   }
@@ -496,6 +568,31 @@
       s.logs = (s.logs || []).concat([{ minutes: minutes, note: note || '', date: today() }]);
     });
     patchTask(taskId, { subtasks: newSubs });
+  }
+  function addJournal(text, weight) {
+    journal.push({ id: uid(), date: today(), text: text, weight: weight });
+    saveJournal();
+    render();
+  }
+  function removeJournal(id) {
+    journal = journal.filter(function (j) { return j.id !== id; });
+    saveJournal();
+    render();
+  }
+  // Điểm tiến bộ của một ngày = việc xong + (phút đã làm / 30) + điểm các ý đã học.
+  function scoreForDay(day) {
+    var items = 0, minutes = 0, learn = 0;
+    tasks.forEach(function (t) {
+      var subs = t.subtasks || [];
+      if (subs.length === 0 && t.done && t.doneAt === day) items++;
+      subs.forEach(function (s) {
+        if (s.done && s.doneAt === day) items++;
+        (s.logs || []).forEach(function (l) { if (l.date === day) minutes += (l.minutes || 0); });
+      });
+    });
+    journal.forEach(function (j) { if (j.date === day) learn += (j.weight || 1); });
+    var total = items + (minutes / 30) * POINTS_PER_30MIN + learn;
+    return { total: Math.round(total * 10) / 10, items: items, minutes: minutes, learn: learn };
   }
   function cyclePriorityClick(taskId) {
     var t = findTask(taskId); if (!t) return;
@@ -632,6 +729,16 @@
       '</div>';
   }
 
+  function dueNote(task) {
+    if (!task.dueDate) return '';
+    var subs = task.subtasks || [];
+    var allDone = subs.length ? subs.every(function (s) { return s.done; }) : task.done;
+    if (allDone) return '';
+    var t = today();
+    if (task.dueDate < t) return '<span class="due-late">Quá hạn</span>';
+    if (task.dueDate === t) return '<span class="due-late">Hạn hôm nay</span>';
+    return '';
+  }
   function arrowIcon(up) {
     return '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="' + (up ? 'M4 10l4-4 4 4' : 'M4 6l4 4 4-4') + '" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
@@ -683,6 +790,12 @@
           '</span>' +
           deleteHtml +
         '</div>' +
+        '<div class="card-dates">' +
+          '<span>Tạo <span class="num">' + esc(fmtDate(dateKey(new Date(task.createdAt || Date.now())))) + '</span></span><span class="dot">·</span>' +
+          '<label for="t-due-' + task.id + '">Hạn</label>' +
+          '<input id="t-due-' + task.id + '" type="date" class="due-input" data-action="set-due" data-task="' + task.id + '" value="' + esc(task.dueDate || '') + '">' +
+          dueNote(task) +
+        '</div>' +
         '<div class="card-tags">' +
           '<button type="button" class="' + badgeClass + '" data-action="cycle-priority" data-task="' + task.id + '" title="' + badgeTitle + '">' + badgeLabel + '</button>' +
         '</div>' +
@@ -727,6 +840,41 @@
     document.getElementById('overview-pct').textContent = ov.pct + '%';
     document.getElementById('overview-count').textContent = ov.doneUnits + '/' + ov.totalUnits + ' việc con xong';
     document.getElementById('overview-time').textContent = 'Đã làm ' + formatMinutes(ov.totalMinutes);
+
+    renderJournal();
+    renderDaily();
+  }
+
+  function renderJournal() {
+    var day = today();
+    var items = journal.filter(function (j) { return j.date === day; });
+    var labels = { 1: 'Nhớ', 2: 'Hiểu', 3: 'Tư duy' };
+    document.getElementById('journal-list').innerHTML = items.map(function (j) {
+      return '<li><span class="jw">' + labels[j.weight] + ' · ' + j.weight + 'đ</span><span class="jtext">' + esc(j.text) + '</span>' +
+        '<button type="button" class="icon-btn danger sm" data-journal-del="' + j.id + '" aria-label="Xoá ý này">' + trashIcon() + '</button></li>';
+    }).join('');
+  }
+
+  function renderDaily() {
+    var t = scoreForDay(today()), y = scoreForDay(yesterday());
+    var fill = document.getElementById('daily-fill');
+    var verdict = document.getElementById('daily-verdict');
+    var detail = document.getElementById('daily-detail');
+    verdict.className = 'daily-verdict';
+    fill.classList.remove('is-behind');
+    if (y.total === 0) {
+      fill.style.width = (t.total > 0 ? 100 : 0) + '%';
+      verdict.textContent = t.total > 0 ? 'Hôm qua chưa có dữ liệu — hôm nay đã có ' + t.total + ' điểm.' : 'Chưa có dữ liệu hôm qua và hôm nay.';
+    } else {
+      var pct = (t.total - y.total) / y.total * 100;
+      var r = Math.round(pct * 10) / 10;
+      fill.style.width = Math.min(100, Math.max(0, t.total / (y.total * 1.01) * 100)) + '%';
+      if (pct >= 1) { verdict.textContent = 'Tiến bộ +' + r + '% so với hôm qua — đạt mục tiêu 1%.'; verdict.classList.add('up'); }
+      else if (pct >= 0) { verdict.textContent = '+' + r + '% so với hôm qua — chưa đủ 1%.'; verdict.classList.add('down'); fill.classList.add('is-behind'); }
+      else { verdict.textContent = 'Tụt lùi ' + Math.abs(r) + '% so với hôm qua.'; verdict.classList.add('down'); fill.classList.add('is-behind'); }
+    }
+    function fmt(x) { return x.total + 'đ (' + x.items + ' việc xong · ' + formatMinutes(x.minutes) + ' · ' + x.learn + 'đ học)'; }
+    detail.textContent = 'Hôm nay: ' + fmt(t) + '  |  Hôm qua: ' + fmt(y);
   }
 
   // ---------- events ----------
@@ -765,10 +913,12 @@
   }
   function onListChange(e) {
     var el = e.target;
-    if (el.matches && el.matches('[data-action="toggle-subtask"]')) {
+    if (el.matches && el.matches('[data-action="set-due"]')) {
+      patchTask(el.dataset.task, { dueDate: el.value || null });
+    } else if (el.matches && el.matches('[data-action="toggle-subtask"]')) {
       toggleSubtaskDone(el.dataset.task, el.dataset.sub);
     } else if (el.matches && el.matches('[data-action="toggle-task-done"]')) {
-      patchTask(el.dataset.task, { done: el.checked });
+      patchTask(el.dataset.task, { done: el.checked, doneAt: el.checked ? today() : null });
     }
   }
   function onListInput(e) {
@@ -813,9 +963,22 @@
       input.value = '';
     });
     document.getElementById('ai-btn').addEventListener('click', runAiSuggestions);
+    document.getElementById('journal-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var input = document.getElementById('journal-text');
+      var text = input.value.trim();
+      if (!text) return;
+      addJournal(text, parseInt(document.getElementById('journal-weight').value, 10) || 1);
+      input.value = '';
+    });
+    document.getElementById('journal-list').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-journal-del]');
+      if (b) removeJournal(b.dataset.journalDel);
+    });
 
     sampleApi = await getCapability('sample'); // stays null outside a Claude Artifact frame
 
+    journal = loadJournal();
     var loaded = loadTasks();
     if (loaded && loaded.length) {
       tasks = loaded;
