@@ -4,22 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Track Việc</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%A6%86%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
   :root {
-    --bg: #EFF3F1;
-    --card: #FFFFFF;
-    --ink: #16211D;
-    --muted: #5B6B63;
-    --muted-soft: #E4EAE6;
-    --border: #D7E0DA;
-    --accent: #146356;
-    --on-accent: #FFFFFF;
-    --accent-soft: #DCEAE6;
-    --must: #A6401C;
-    --must-soft: #F5E2DA;
-    --nice: #8A6D22;
-    --nice-soft: #F1E8CF;
+    --bg: #FFF7D6;
+    --card: #FFFDF5;
+    --ink: #3B2F14;
+    --muted: #7A6A42;
+    --muted-soft: #FBEFBE;
+    --border: #F0DC8C;
+    --accent: #F5B700;
+    --on-accent: #3B2F14;
+    --accent-soft: #FFEFA8; --accent-text: #8A5A00;
+    --must: #C2410C;
+    --must-soft: #FDE0D2;
+    --nice: #3F6B2E;
+    --nice-soft: #E3F0D3;
 
     --font-display: 'Be Vietnam Pro', 'Inter', system-ui, sans-serif;
     --font-body: 'Inter', 'Be Vietnam Pro', system-ui, sans-serif;
@@ -28,36 +29,36 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #101613;
-      --card: #182420;
-      --ink: #E7EEEA;
-      --muted: #93A39A;
-      --muted-soft: #233029;
-      --border: #26332D;
-      --accent: #4FBBA3;
-      --on-accent: #06231D;
-      --accent-soft: #17332C;
-      --must: #E2703E;
-      --must-soft: #3A2117;
-      --nice: #D8B75B;
-      --nice-soft: #362C13;
+      --bg: #231D0F;
+      --card: #2E2614;
+      --ink: #FFF1C2;
+      --muted: #C9B982;
+      --muted-soft: #3C3219;
+      --border: #4C4022;
+      --accent: #FFD23F;
+      --on-accent: #2A2208;
+      --accent-soft: #4A3C12; --accent-text: #FFD23F;
+      --must: #FF8A5C;
+      --must-soft: #4A2A1C;
+      --nice: #A8D38A;
+      --nice-soft: #2D3B22;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #101613;
-    --card: #182420;
-    --ink: #E7EEEA;
-    --muted: #93A39A;
-    --muted-soft: #233029;
-    --border: #26332D;
-    --accent: #4FBBA3;
-    --on-accent: #06231D;
-    --accent-soft: #17332C;
-    --must: #E2703E;
-    --must-soft: #3A2117;
-    --nice: #D8B75B;
-    --nice-soft: #362C13;
+    --bg: #231D0F;
+    --card: #2E2614;
+    --ink: #FFF1C2;
+    --muted: #C9B982;
+    --muted-soft: #3C3219;
+    --border: #4C4022;
+    --accent: #FFD23F;
+    --on-accent: #2A2208;
+    --accent-soft: #4A3C12; --accent-text: #FFD23F;
+    --must: #FF8A5C;
+    --must-soft: #4A2A1C;
+    --nice: #A8D38A;
+    --nice-soft: #2D3B22;
     color-scheme: dark;
   }
 
@@ -88,13 +89,10 @@
   }
 
   .topbar {
-    position: sticky;
-    top: env(safe-area-inset-top, 0px);
     background: var(--bg);
     padding-block: 10px 14px;
     border-bottom: 1px solid var(--border);
     margin-bottom: 18px;
-    z-index: 10;
   }
   .brand-row {
     display: flex;
@@ -110,6 +108,8 @@
     font-size: 20px;
     letter-spacing: -0.01em;
   }
+  .brand { display: inline-flex; align-items: center; gap: 8px; }
+  .card { box-shadow: 0 2px 0 var(--border); }
   .local-note { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
   .overview { display: flex; flex-direction: column; gap: 6px; }
   .overview-stats {
@@ -120,7 +120,7 @@
   .dot { opacity: .6; }
 
   .progress-track {
-    height: 8px; border-radius: 999px; background: var(--muted-soft);
+    height: 10px; border-radius: 999px; background: var(--muted-soft); border: 1px solid var(--border);
     overflow: hidden;
   }
   .progress-fill {
@@ -154,7 +154,7 @@
   .icon-btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
   .move-btns { display: inline-flex; flex: 0 0 auto; }
   .link-btn {
-    background: none; border: none; color: var(--accent); font-size: 12.5px;
+    background: none; border: none; color: var(--accent-text); font-size: 12.5px;
     font-weight: 600; cursor: pointer; padding: 2px 0;
   }
   .link-btn:hover { text-decoration: underline; }
@@ -279,7 +279,7 @@
   .progress-fill.is-behind { background: var(--must); }
   .daily-detail { font-size: 12px; color: var(--muted); }
   .daily-verdict { font-weight: 600; }
-  .daily-verdict.up { color: var(--accent); }
+  .daily-verdict.up { color: var(--accent-text); }
   .daily-verdict.down { color: var(--must); }
 
   .journal { margin-bottom: 20px; }
@@ -293,7 +293,7 @@
   .journal-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
   .journal-list li { display: flex; align-items: center; gap: 8px; font-size: 14px; }
   .journal-list .jtext { flex: 1 1 auto; min-width: 0; }
-  .jw { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+  .jw { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); white-space: nowrap; }
 
   .card-dates {
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
@@ -315,7 +315,7 @@
   .jtext { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
   .tags { display: block; margin-top: 3px; white-space: normal; }
   .tag {
-    display: inline-block; font-size: 11.5px; color: var(--accent); background: var(--accent-soft);
+    display: inline-block; font-size: 11.5px; color: var(--accent-text); background: var(--accent-soft);
     border-radius: 999px; padding: 1px 8px; margin: 0 4px 2px 0;
   }
   details.card { margin-top: 20px; }
@@ -358,7 +358,7 @@
 <div class="app">
   <header class="topbar">
     <div class="brand-row">
-      <span class="brand">Track Việc</span>
+      <span class="brand"><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="14" cy="21" rx="11" ry="8" fill="#FFD23F"/><circle cx="21" cy="12" r="7" fill="#FFD23F"/><path d="M26.5 11.5c3 0 4.5 1 4.5 2s-1.500 2-4.500 1.500z" fill="#FF9F1C"/><circle cx="22.500" cy="10.500" r="1.200" fill="#3B2F14"/><circle cx="25" cy="13.500" r="1.300" fill="#FFB3A0" opacity=".8"/><path d="M8 21c2 3.500 8 3.500 10.500 0" stroke="#F2A900" stroke-width="1.600" fill="none" stroke-linecap="round"/></svg>Track Việc</span>
       <button id="ai-btn" type="button" class="btn btn-accent">Nhờ AI phân loại ưu tiên</button>
     </div>
     <p class="local-note">Bản GitHub Pages — dữ liệu lưu ở trình duyệt này (không đồng bộ nhiều máy).</p>
@@ -405,7 +405,7 @@
   </section>
 
   <main id="task-list" class="task-list"></main>
-  <div id="empty-state" class="empty-state" hidden>Chưa có việc nào — thêm việc đầu tiên ở trên nhé.</div>
+  <div id="empty-state" class="empty-state" hidden>🦆 Chưa có việc nào — thêm việc đầu tiên ở trên nhé.</div>
 
   <details id="diary" class="card">
     <summary>Nhật ký <span id="diary-count" class="num"></span></summary>
