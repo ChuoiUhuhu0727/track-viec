@@ -12,11 +12,11 @@
     --card: #FFFFFF;
     --ink: #35121F;
     --muted: #653450;
-    --muted-soft: #FFE5EF;
-    --border: #EBA3C1;
+    --muted-soft: #D3E8FA;
+    --border: #8FC3EC;
     --accent: #F59CBF;
     --on-accent: #4A2236;
-    --accent-soft: #FFE2EE; --accent-text: #AE2D68; --duck-op: .22;
+    --accent-soft: #FFE2EE; --accent-text: #AE2D68; --duck-op: .55; --panel: #E4F2FF;
     --must: #C2410C;
     --must-soft: #FDE0D2;
     --nice: #3F6B2E;
@@ -37,7 +37,7 @@
       --border: #5E3548;
       --accent: #FF8FBF;
       --on-accent: #35101F;
-      --accent-soft: #5A2B42; --accent-text: #FF9EC8; --duck-op: .1;
+      --accent-soft: #5A2B42; --accent-text: #FF9EC8; --duck-op: .16; --panel: #38202C;
       --must: #FF8A5C;
       --must-soft: #4A2A1C;
       --nice: #A8D38A;
@@ -54,7 +54,7 @@
     --border: #5E3548;
     --accent: #FF8FBF;
     --on-accent: #35101F;
-    --accent-soft: #5A2B42; --accent-text: #FF9EC8; --duck-op: .1;
+    --accent-soft: #5A2B42; --accent-text: #FF9EC8; --duck-op: .16; --panel: #38202C;
     --must: #FF8A5C;
     --must-soft: #4A2A1C;
     --nice: #A8D38A;
@@ -95,7 +95,7 @@
   }
 
   .topbar {
-    background: var(--card);
+    background: var(--panel);
     padding: 12px 16px 14px;
     border: 1px solid var(--border);
     border-radius: 14px;
@@ -181,12 +181,12 @@
 
   .task-list { display: flex; flex-direction: column; gap: 20px; }
   .empty-state {
-    background: var(--card); border-radius: 14px;
+    background: var(--panel); border-radius: 14px;
     text-align: center; color: var(--muted); padding: 40px 16px; font-size: 14px;
   }
 
   .card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
     padding: 16px 18px 18px;
   }
   .card-head {
