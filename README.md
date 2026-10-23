@@ -14,9 +14,17 @@ https://chuoiuhuhu0727.github.io/track-viec/
 - Thanh tiến độ % theo số việc con đã xong, cả ở từng việc lẫn tổng toàn bộ danh sách.
 - Gắn nhãn ưu tiên thủ công: must-have / nice-to-have, bấm vào badge để đổi.
 
+- Việc mới tạo tự lên đầu; mỗi việc có ngày tạo, ngày hạn, nút lên/xuống.
+- Thanh "tiến bộ hôm nay so với hôm qua": điểm = việc con xong + phút làm / 30 + điểm các ý đã học (Nhớ 1đ / Hiểu 2đ / Tư duy 3đ).
+- Nhật ký ngắn: ghi chú có nhãn (vd `internship`), lọc theo nhãn, ghi chú loại "Ghi chú" không tính điểm.
+- Đồng bộ qua repo GitHub + xuất/nhập file JSON.
+
 ## Về việc lưu dữ liệu
 
-Bản này là static site thuần (không có backend), nên dữ liệu lưu bằng `localStorage` — chỉ nằm trên trình duyệt cậu đang dùng, không đồng bộ giữa các máy/thiết bị khác nhau. Xoá cache trình duyệt hoặc đổi trình duyệt khác sẽ mất dữ liệu.
+Dữ liệu luôn lưu ở `localStorage` của trình duyệt (xoá cache là mất), nên có hai cách giữ an toàn:
+
+1. **Xuất/nhập JSON** — mục "Đồng bộ GitHub & sao lưu" ở cuối trang.
+2. **Đồng bộ GitHub** — app ghi file `data.json` vào một repo dữ liệu (nên là repo riêng, **không phải repo này**). Cần fine-grained token chỉ cấp cho repo đó, quyền *Contents: read & write*. Token nằm trong trình duyệt, không commit lên đâu cả. Khi cả hai bên cùng thay đổi, app hỏi lấy bản nào.
 
 ## Về tính năng AI gợi ý ưu tiên
 

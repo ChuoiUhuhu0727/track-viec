@@ -305,6 +305,37 @@
   }
   .due-late { color: var(--must); font-weight: 600; }
 
+  .journal textarea {
+    flex: 1 1 100%; font-family: var(--font-body); font-size: 14.5px; color: var(--ink);
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; resize: vertical; min-height: 60px;
+  }
+  .journal textarea::placeholder { color: var(--muted); }
+  .journal-list li { align-items: flex-start; }
+  .jtext { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .tags { display: block; margin-top: 3px; white-space: normal; }
+  .tag {
+    display: inline-block; font-size: 11.5px; color: var(--accent); background: var(--accent-soft);
+    border-radius: 999px; padding: 1px 8px; margin: 0 4px 2px 0;
+  }
+  details.card { margin-top: 20px; }
+  details.card > summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; font-size: 15px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
+  .chip {
+    font-family: var(--font-body); font-size: 12.5px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); border-radius: 999px; padding: 4px 10px; cursor: pointer;
+  }
+  .chip.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .diary-date { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 14px 0 6px; }
+  .sync-form { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+  .sync-form label { display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--muted); }
+  .sync-form input {
+    font-family: var(--font-body); font-size: 14px; color: var(--ink);
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+  }
+  .sync-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .sync-err { color: var(--must); }
+
   .toast {
     position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px));
     transform: translateX(-50%);
@@ -358,13 +389,15 @@
 
   <section class="card journal">
     <h2>Hôm nay mình học được gì?</h2>
-    <p class="journal-hint">Ghi lại điều đã thật sự học / hiểu / tự tư duy được — không chỉ việc đã làm. Mỗi ý tính điểm theo độ lớn.</p>
+    <p class="journal-hint">Ghi điều đã học / hiểu / tự tư duy được, hoặc ghi chú sau một sự kiện (phỏng vấn, họp…). Gắn nhãn để lọc lại sau. "Ghi chú" thường thì không tính điểm tiến bộ.</p>
     <form id="journal-form" class="add-row">
-      <input id="journal-text" type="text" placeholder="vd: hiểu vì sao SLAM cần loop closure…" autocomplete="off" required />
+      <textarea id="journal-text" placeholder="vd: hiểu vì sao SLAM cần loop closure… (Ctrl+Enter để ghi)" required></textarea>
+      <input id="journal-tags" type="text" placeholder="nhãn, cách nhau bằng dấu phẩy (vd: internship, embedded)" autocomplete="off" />
       <select id="journal-weight" aria-label="Độ lớn">
         <option value="1">Nhớ được (1đ)</option>
         <option value="2">Hiểu được (2đ)</option>
         <option value="3">Tự tư duy / áp dụng (3đ)</option>
+        <option value="0">Ghi chú (0đ)</option>
       </select>
       <button type="submit" class="btn btn-primary">Ghi</button>
     </form>
@@ -373,6 +406,36 @@
 
   <main id="task-list" class="task-list"></main>
   <div id="empty-state" class="empty-state" hidden>Chưa có việc nào — thêm việc đầu tiên ở trên nhé.</div>
+
+  <details id="diary" class="card">
+    <summary>Nhật ký <span id="diary-count" class="num"></span></summary>
+    <div id="diary-chips" class="chips"></div>
+    <div id="diary-list"></div>
+  </details>
+
+  <details id="sync-panel" class="card">
+    <summary>Đồng bộ GitHub &amp; sao lưu</summary>
+    <p class="journal-hint">Dữ liệu được ghi vào file <code>data.json</code> trong repo GitHub của cậu (mỗi lần lưu là một commit). Token chỉ lưu ở trình duyệt này.</p>
+    <form id="sync-form" class="sync-form">
+      <label>Repo dữ liệu (owner/tên)
+        <input id="sync-repo" type="text" placeholder="ChuoiUhuhu0727/track-viec-data" autocomplete="off" />
+      </label>
+      <label>Token (fine-grained, quyền Contents: read &amp; write)
+        <input id="sync-token" type="password" placeholder="github_pat_…" autocomplete="off" />
+      </label>
+      <div class="sync-actions">
+        <button type="submit" class="btn btn-primary btn-sm">Lưu &amp; đồng bộ</button>
+        <button type="button" id="sync-now" class="btn btn-ghost btn-sm">Đồng bộ ngay</button>
+        <button type="button" id="sync-off" class="btn btn-ghost btn-sm">Tắt đồng bộ</button>
+      </div>
+    </form>
+    <div id="sync-status" class="ai-status">Chưa bật đồng bộ.</div>
+    <div class="sync-actions">
+      <button type="button" id="export-btn" class="btn btn-ghost btn-sm">Xuất file JSON</button>
+      <button type="button" id="import-btn" class="btn btn-ghost btn-sm">Nhập file JSON</button>
+      <input id="import-file" type="file" accept="application/json,.json" hidden />
+    </div>
+  </details>
 </div>
 
 <div id="toast" class="toast" hidden></div>
@@ -389,6 +452,13 @@
   var sampleApi = null;
   var tasks = [];
   var journal = [];
+  var SYNC_KEY = 'trackViec.sync.v1';   // {repo, token}
+  var META_KEY = 'trackViec.meta.v1';   // {dirty, syncedSha}
+  var DATA_PATH = 'data.json';
+  var syncCfg = readJson(SYNC_KEY);
+  var syncMeta = readJson(META_KEY) || { dirty: false, syncedSha: null };
+  var syncing = false, syncQueued = false, syncTimer = null, changeSeq = 0;
+  var diaryFilter = null;
   var aiLoading = false;
   var collapsedTasks = new Set();
   var openHistories = new Set();
@@ -473,10 +543,12 @@
     return [];
   }
   function saveJournal() {
+    markDirty();
     try { localStorage.setItem(JOURNAL_KEY, JSON.stringify(journal)); }
     catch (e) { showToast('Không lưu được vào bộ nhớ trình duyệt.'); }
   }
   function saveTasks() {
+    markDirty();
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }
     catch (e) { showToast('Không lưu được vào bộ nhớ trình duyệt.'); }
   }
@@ -569,8 +641,16 @@
     });
     patchTask(taskId, { subtasks: newSubs });
   }
-  function addJournal(text, weight) {
-    journal.push({ id: uid(), date: today(), text: text, weight: weight });
+  function parseTags(raw) {
+    var out = [];
+    String(raw || '').split(',').forEach(function (t) {
+      t = t.trim().replace(/^#+/, '').toLowerCase();
+      if (t && out.indexOf(t) < 0) out.push(t);
+    });
+    return out;
+  }
+  function addJournal(text, weight, tags) {
+    journal.push({ id: uid(), date: today(), text: text, weight: weight, tags: tags || [] });
     saveJournal();
     render();
   }
@@ -590,7 +670,7 @@
         (s.logs || []).forEach(function (l) { if (l.date === day) minutes += (l.minutes || 0); });
       });
     });
-    journal.forEach(function (j) { if (j.date === day) learn += (j.weight || 1); });
+    journal.forEach(function (j) { if (j.date === day) learn += (j.weight == null ? 1 : j.weight); });
     var total = items + (minutes / 30) * POINTS_PER_30MIN + learn;
     return { total: Math.round(total * 10) / 10, items: items, minutes: minutes, learn: learn };
   }
@@ -845,14 +925,48 @@
     renderDaily();
   }
 
+  function weightLabel(w) {
+    return w === 0 ? 'Ghi chú' : (w === 2 ? 'Hiểu' : (w === 3 ? 'Tư duy' : 'Nhớ')) + ' · ' + w + 'đ';
+  }
+  function entryHtml(j) {
+    var w = (j.weight == null ? 1 : j.weight);
+    var tags = (j.tags || []).map(function (t) { return '<span class="tag">#' + esc(t) + '</span>'; }).join('');
+    return '<li><span class="jw">' + esc(weightLabel(w)) + '</span>' +
+      '<span class="jtext">' + esc(j.text) + (tags ? '<span class="tags">' + tags + '</span>' : '') + '</span>' +
+      '<button type="button" class="icon-btn danger sm" data-journal-del="' + esc(j.id) + '" aria-label="Xoá ghi chú này">' + trashIcon() + '</button></li>';
+  }
   function renderJournal() {
     var day = today();
-    var items = journal.filter(function (j) { return j.date === day; });
-    var labels = { 1: 'Nhớ', 2: 'Hiểu', 3: 'Tư duy' };
-    document.getElementById('journal-list').innerHTML = items.map(function (j) {
-      return '<li><span class="jw">' + labels[j.weight] + ' · ' + j.weight + 'đ</span><span class="jtext">' + esc(j.text) + '</span>' +
-        '<button type="button" class="icon-btn danger sm" data-journal-del="' + j.id + '" aria-label="Xoá ý này">' + trashIcon() + '</button></li>';
-    }).join('');
+    document.getElementById('journal-list').innerHTML = journal
+      .filter(function (j) { return j.date === day; }).map(entryHtml).join('');
+    renderDiary();
+  }
+  function renderDiary() {
+    var counts = {};
+    journal.forEach(function (j) { (j.tags || []).forEach(function (t) { counts[t] = (counts[t] || 0) + 1; }); });
+    var tags = Object.keys(counts).sort();
+    if (diaryFilter && !counts[diaryFilter]) diaryFilter = null;
+    document.getElementById('diary-count').textContent = '(' + journal.length + ')';
+    document.getElementById('diary-chips').innerHTML =
+      '<button type="button" class="chip' + (diaryFilter ? '' : ' on') + '" data-tag="">Tất cả (' + journal.length + ')</button>' +
+      tags.map(function (t) {
+        return '<button type="button" class="chip' + (diaryFilter === t ? ' on' : '') + '" data-tag="' + esc(t) + '">#' + esc(t) + ' (' + counts[t] + ')</button>';
+      }).join('');
+    var items = journal.slice().reverse()
+      .filter(function (j) { return !diaryFilter || (j.tags || []).indexOf(diaryFilter) >= 0; })
+      .sort(function (a, b) { return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); });
+    var html = '', last = null;
+    items.forEach(function (j) {
+      if (j.date !== last) {
+        if (last !== null) html += '</ul>';
+        var d = String(j.date).split('-');
+        html += '<h3 class="diary-date">' + (d.length === 3 ? d[2] + '/' + d[1] + '/' + d[0] : esc(j.date)) + '</h3><ul class="journal-list">';
+        last = j.date;
+      }
+      html += entryHtml(j);
+    });
+    if (last !== null) html += '</ul>';
+    document.getElementById('diary-list').innerHTML = html || '<div class="empty-state">Chưa có ghi chú nào.</div>';
   }
 
   function renderDaily() {
@@ -948,6 +1062,187 @@
     }
   }
 
+  // ---------- GitHub sync (whole-file, last-writer-wins with a conflict prompt) ----------
+  function readJson(key) {
+    try { var r = localStorage.getItem(key); return r ? JSON.parse(r) : null; } catch (e) { return null; }
+  }
+  function writeJson(key, v) {
+    try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) { /* storage blocked */ }
+  }
+  function writeLocal() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      localStorage.setItem(JOURNAL_KEY, JSON.stringify(journal));
+    } catch (e) { /* storage blocked */ }
+  }
+  function b64enc(str) {
+    var bytes = new TextEncoder().encode(str), bin = '';
+    bytes.forEach(function (b) { bin += String.fromCharCode(b); });
+    return btoa(bin);
+  }
+  function b64dec(b64) {
+    var bin = atob(b64.replace(/\s/g, ''));
+    return new TextDecoder().decode(Uint8Array.from(bin, function (c) { return c.charCodeAt(0); }));
+  }
+  function snapshot() {
+    return JSON.stringify({ version: 1, savedAt: new Date().toISOString(), tasks: tasks, journal: journal }, null, 2);
+  }
+  function setSyncStatus(msg, isErr) {
+    var el = document.getElementById('sync-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.toggle('sync-err', !!isErr);
+  }
+  function syncErrorCopy(e) {
+    switch (e && e.status) {
+      case 401: return 'Token sai hoặc hết hạn.';
+      case 403: return 'Token không đủ quyền (cần Contents: read & write) hoặc bị giới hạn tốc độ.';
+      case 404: return 'Không tìm thấy repo — kiểm tra tên repo và quyền của token.';
+      case 409:
+      case 422: return 'Dữ liệu trên GitHub vừa đổi — thử đồng bộ lại.';
+      default: return 'Không kết nối được GitHub.';
+    }
+  }
+  function markDirty() {
+    changeSeq++;
+    syncMeta.dirty = true;
+    writeJson(META_KEY, syncMeta);
+    if (syncCfg) {
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(syncNow, 3000);
+      setSyncStatus('Có thay đổi chưa đồng bộ…');
+    }
+  }
+  function ghUrl() { return 'https://api.github.com/repos/' + syncCfg.repo + '/contents/' + DATA_PATH; }
+  function ghHeaders() {
+    return { 'Authorization': 'Bearer ' + syncCfg.token, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+  }
+  async function ghGet() {
+    var res = await fetch(ghUrl(), { headers: ghHeaders(), cache: 'no-store' });
+    if (res.status === 404) return null;
+    if (!res.ok) throw { status: res.status };
+    var j = await res.json();
+    return { sha: j.sha, data: JSON.parse(b64dec(j.content)) };
+  }
+  async function ghPut(sha) {
+    var body = { message: 'sync ' + new Date().toISOString(), content: b64enc(snapshot()) };
+    if (sha) body.sha = sha;
+    var headers = ghHeaders();
+    headers['Content-Type'] = 'application/json';
+    var res = await fetch(ghUrl(), { method: 'PUT', headers: headers, body: JSON.stringify(body) });
+    if (!res.ok) throw { status: res.status };
+    var j = await res.json();
+    return j.content.sha;
+  }
+  function applyData(data) {
+    tasks = Array.isArray(data.tasks) ? data.tasks : [];
+    journal = Array.isArray(data.journal) ? data.journal : [];
+    writeLocal();
+    render();
+  }
+  async function syncNow() {
+    if (!syncCfg) return;
+    clearTimeout(syncTimer);
+    if (syncing) { syncQueued = true; return; }
+    syncing = true;
+    setSyncStatus('Đang đồng bộ…');
+    try {
+      var remote = await ghGet();
+      var seq = changeSeq;
+      if (!remote) {
+        syncMeta.syncedSha = await ghPut(null);
+        syncMeta.dirty = changeSeq !== seq;
+      } else {
+        var remoteChanged = remote.sha !== syncMeta.syncedSha;
+        var useRemote = remoteChanged && !syncMeta.dirty;
+        if (remoteChanged && syncMeta.dirty) {
+          useRemote = confirm('Cả máy này và GitHub đều có thay đổi chưa đồng bộ.\n\nOK = lấy bản trên GitHub (bỏ thay đổi ở máy này)\nHuỷ = ghi đè GitHub bằng bản ở máy này');
+        }
+        if (useRemote) {
+          applyData(remote.data);
+          syncMeta.syncedSha = remote.sha;
+          syncMeta.dirty = false;
+        } else if (syncMeta.dirty) {
+          syncMeta.syncedSha = await ghPut(remote.sha);
+          syncMeta.dirty = changeSeq !== seq;
+        }
+      }
+      writeJson(META_KEY, syncMeta);
+      var now = new Date();
+      setSyncStatus('Đã đồng bộ lúc ' + now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes() + '.');
+    } catch (e) {
+      setSyncStatus(syncErrorCopy(e), true);
+    } finally {
+      syncing = false;
+      if (syncQueued) { syncQueued = false; syncNow(); }
+    }
+  }
+  function exportJson() {
+    var blob = new Blob([snapshot()], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'track-viec-' + today() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  }
+  async function importJson(file) {
+    try {
+      var data = JSON.parse(await file.text());
+      if (!data || !Array.isArray(data.tasks)) throw new Error('bad');
+      if (!confirm('Thay toàn bộ dữ liệu hiện tại bằng file này?')) return;
+      tasks = data.tasks;
+      journal = Array.isArray(data.journal) ? data.journal : [];
+      saveTasks();
+      saveJournal();
+      render();
+      showToast('Đã nhập dữ liệu.');
+    } catch (e) {
+      showToast('File không đúng định dạng của Track Việc.');
+    }
+  }
+  function initSync() {
+    var repoEl = document.getElementById('sync-repo');
+    var tokenEl = document.getElementById('sync-token');
+    if (syncCfg) {
+      repoEl.value = syncCfg.repo;
+      tokenEl.placeholder = '(đã lưu — để trống nếu giữ nguyên)';
+    }
+    document.getElementById('sync-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var repo = repoEl.value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/\/$/, '');
+      var token = tokenEl.value.trim() || (syncCfg && syncCfg.token) || '';
+      if (!/^[\w.-]+\/[\w.-]+$/.test(repo) || !token) { setSyncStatus('Cần nhập repo dạng owner/tên và token.', true); return; }
+      var firstLink = !syncCfg || syncCfg.repo !== repo;
+      syncCfg = { repo: repo, token: token };
+      writeJson(SYNC_KEY, syncCfg);
+      if (firstLink) { syncMeta = { dirty: true, syncedSha: null }; writeJson(META_KEY, syncMeta); }
+      repoEl.value = repo;
+      tokenEl.value = '';
+      tokenEl.placeholder = '(đã lưu — để trống nếu giữ nguyên)';
+      syncNow();
+    });
+    document.getElementById('sync-now').addEventListener('click', function () {
+      if (!syncCfg) { setSyncStatus('Chưa bật đồng bộ — nhập repo và token trước.', true); return; }
+      syncNow();
+    });
+    document.getElementById('sync-off').addEventListener('click', function () {
+      syncCfg = null;
+      try { localStorage.removeItem(SYNC_KEY); } catch (e) {}
+      tokenEl.placeholder = 'github_pat_…';
+      setSyncStatus('Đã tắt đồng bộ (token đã xoá khỏi trình duyệt này).');
+    });
+    document.getElementById('export-btn').addEventListener('click', exportJson);
+    var fileEl = document.getElementById('import-file');
+    document.getElementById('import-btn').addEventListener('click', function () { fileEl.click(); });
+    fileEl.addEventListener('change', function () {
+      if (fileEl.files && fileEl.files[0]) importJson(fileEl.files[0]);
+      fileEl.value = '';
+    });
+    if (syncCfg) syncNow();
+  }
+
   // ---------- init ----------
   async function initApp() {
     document.getElementById('task-list').addEventListener('click', onListClick);
@@ -966,14 +1261,28 @@
     document.getElementById('journal-form').addEventListener('submit', function (e) {
       e.preventDefault();
       var input = document.getElementById('journal-text');
+      var tagsEl = document.getElementById('journal-tags');
       var text = input.value.trim();
       if (!text) return;
-      addJournal(text, parseInt(document.getElementById('journal-weight').value, 10) || 1);
+      var w = parseInt(document.getElementById('journal-weight').value, 10);
+      addJournal(text, isNaN(w) ? 1 : w, parseTags(tagsEl.value));
       input.value = '';
+      tagsEl.value = '';
     });
-    document.getElementById('journal-list').addEventListener('click', function (e) {
+    document.getElementById('journal-text').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); document.getElementById('journal-form').requestSubmit(); }
+    });
+    function onJournalDelete(e) {
       var b = e.target.closest('[data-journal-del]');
       if (b) removeJournal(b.dataset.journalDel);
+    }
+    document.getElementById('journal-list').addEventListener('click', onJournalDelete);
+    document.getElementById('diary-list').addEventListener('click', onJournalDelete);
+    document.getElementById('diary-chips').addEventListener('click', function (e) {
+      var chip = e.target.closest('[data-tag]');
+      if (!chip) return;
+      diaryFilter = chip.dataset.tag || null;
+      renderDiary();
     });
 
     sampleApi = await getCapability('sample'); // stays null outside a Claude Artifact frame
@@ -984,9 +1293,10 @@
       tasks = loaded;
     } else {
       tasks = exampleTasks();
-      saveTasks();
+      writeLocal();
     }
     render();
+    initSync();
   }
 
   initApp();
